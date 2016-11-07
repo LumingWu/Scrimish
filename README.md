@@ -1,0 +1,2 @@
+# Scrimish
+Before the end of the semester, this repository is just sample code for Fall 2016 CSE114 Stony Brook students to get an idea on how to nail their project Scrimish. The students may learn various features in JavaFX and approaches through my documented code, but my code can't earn them any credit if they don't understand it and modify it for their need. After the end of the semester, I will implement this game with fully during the winter break.
