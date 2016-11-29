@@ -8,7 +8,7 @@
   </information>
   <resources>
     <j2se version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
-    <jar href="Scrimish.jar" size="10002226" download="eager" />
+    <jar href="Scrimish.jar" size="10079408" download="eager" />
   </resources>
   <applet-desc  width="800" height="600" main-class="com.javafx.main.NoJavaFXFallback"  name="Scrimish" >
     <param name="requiredFXVersion" value="8.0+"/>

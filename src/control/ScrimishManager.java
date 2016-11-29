@@ -1,6 +1,8 @@
 package control;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -20,10 +22,118 @@ public class ScrimishManager {
     private AudioClip victorySound;
     private AudioClip cardSound;
     
+    private ArrayList<LinkedList<String>> blueCards;
+    private ArrayList<LinkedList<String>> redCards;
+    
     public ScrimishManager(ScrimishUI ui){
         _ui = ui;
-        
+        blueCards = new ArrayList<LinkedList<String>>(6);
+        redCards = new ArrayList<LinkedList<String>>(6);
+        for(int i = 0; i < 6; i++){
+            blueCards.add(new LinkedList<String>());
+            redCards.add(new LinkedList<String>());
+        }
         initializeAudio();
+    }
+    
+    public void handleVictory(ScrimishUI.ScrimishColors color){
+        Label winner = (Label)((HBox)((VBox)_ui.getGameOverScreen().getCenter()).getChildren().get(0)).getChildren().get(0);
+        switch(color){
+            case BLUE:
+                winner.setText("Blue");
+                winner.setTextFill(Paint.valueOf("blue"));
+                break;
+            case RED:
+                winner.setText("Red");
+                winner.setTextFill(Paint.valueOf("red"));
+                break;
+            default:
+                
+        }
+        _ui.switchScreen(ScrimishUI.ScrimishScreens.GAME_OVER_SCREEN);
+        playVictorySound();
+    }
+    
+    /**
+     * This function should clean all the cards for both players and redistribute cards that
+     * the crown card should be at the bottom of one of the piles.
+     * This function should be called by the GUI and it should call GUI function
+     * to display the new set of cards.
+     */
+    public void resetCardBoard(){
+        for(int i = 0; i < 6; i++){
+            blueCards.get(i).clear();
+            redCards.get(i).clear();
+        }
+        blueCards.get(5).add("archerBlue");
+        redCards.get(5).add("archerRed");
+        blueCards.get(5).add("crownBlue");
+        redCards.get(5).add("crownRed");
+        blueCards.get(5).add("daggerBlue");
+        redCards.get(5).add("daggerRed");
+        blueCards.get(5).add("halberdBlue");
+        redCards.get(5).add("halberdRed");
+        blueCards.get(5).add("longSwordBlue");
+        redCards.get(5).add("longSwordRed");
+        blueCards.get(5).add("morningStarBlue");
+        redCards.get(5).add("morningStarRed");
+        blueCards.get(5).add("shieldBlue");
+        redCards.get(5).add("shieldRed");
+        blueCards.get(5).add("swordBlue");
+        redCards.get(5).add("swordRed");
+        blueCards.get(5).add("warAxeBlue");
+        redCards.get(5).add("warAxeRed");
+    }
+    
+    public void rotateBlueCard(){
+        blueCards.get(5).addFirst(blueCards.get(5).removeLast());
+    }
+    
+    public void rotateRedCard(){
+        redCards.get(5).addFirst(redCards.get(5).removeLast());
+    }
+    
+    public String getBlueCard(int pile){
+        if(blueCards.get(pile).isEmpty()){
+            return null;
+        }
+        return blueCards.get(pile).getLast();
+    }
+    
+    public String getRedCard(int pile){
+        if(redCards.get(pile).isEmpty()){
+            return null;
+        }
+        return redCards.get(pile).getLast();
+    }
+    
+    /**
+     * This function should determine the result of the card fight.
+     * Three possible result:
+     * (1) Attacking card is discard.
+     * (2) Defending card is discard.
+     * (3) Both cards are discard.
+     * (4) No card gets discard, announce winner through GUI function.
+     * According to the result, the view of GUI has to be changed by GUI function
+     * and the Manager should change its own data too.
+     * @param sourceColor
+     * @param sourcePile
+     * @param destinColor
+     * @param destinPile 
+     */
+    public void cardFight(ScrimishColors sourceColor, int sourcePile, ScrimishColors destinColor, int destinPile){
+        if(sourceColor == destinColor && sourcePile == 5){
+            if(sourceColor == ScrimishColors.BLUE){
+                blueCards.get(destinPile).addFirst(blueCards.get(sourcePile).removeLast());
+            }
+            else{
+                redCards.get(destinPile).addFirst(redCards.get(sourcePile).removeLast());
+            }
+        }
+        else{
+            playCardSound();
+            handleVictory(sourceColor);
+        }
     }
     
     private void initializeAudio(){
@@ -74,23 +184,6 @@ public class ScrimishManager {
         _ui.switchScreen(ScrimishUI.ScrimishScreens.MENU_SCREEN);
     }
     
-    public void handleVictory(ScrimishUI.ScrimishColors color){
-        Label winner = (Label)((HBox)((VBox)_ui.getGameOverScreen().getCenter()).getChildren().get(0)).getChildren().get(0);
-        switch(color){
-            case BLUE:
-                winner.setText("Blue");
-                winner.setTextFill(Paint.valueOf("blue"));
-                break;
-            case RED:
-                winner.setText("Red");
-                winner.setTextFill(Paint.valueOf("red"));
-                break;
-            default:
-                
-        }
-        _ui.switchScreen(ScrimishUI.ScrimishScreens.GAME_OVER_SCREEN);
-        playVictorySound();
-    }
     
     public void handleMenuButtonClicked(){
         _ui.switchScreen(ScrimishUI.ScrimishScreens.MENU_SCREEN);
@@ -103,45 +196,6 @@ public class ScrimishManager {
     public void handleRestartButtonClicked(){
         _ui.resetBoard();
         _ui.switchScreen(ScrimishUI.ScrimishScreens.IN_GAME_SCREEN);
-    }
-    
-    /**
-     * This function should clean all the cards for both players and redistribute cards that
-     * the crown card should be at the bottom of one of the piles.
-     * This function should be called by the GUI and it should call GUI function
-     * to display the new set of cards.
-     */
-    public void resetCardBoard(){
-        for(int i = 0; i < 5; i++){
-            Label bluecard = new Label("Card" + i);
-            bluecard.setPrefSize(100, 200);
-            bluecard.setStyle("-fx-background-color: blue;");
-            _ui.addCard(bluecard, ScrimishColors.BLUE, i);
-            Label redcard = new Label("Card" + i);
-            redcard.setPrefSize(100, 200);
-            redcard.setStyle("-fx-background-color: red;");
-            _ui.addCard(redcard, ScrimishColors.RED, i);
-        }
-    }
-    
-    /**
-     * This function should determine the result of the card fight.
-     * Three possible result:
-     * (1) Attacking card is discard.
-     * (2) Defending card is discard.
-     * (3) Both cards are discard.
-     * (4) No card gets discard, announce winner through GUI function.
-     * According to the result, the view of GUI has to be changed by GUI function
-     * and the Manager should change its own data too.
-     * @param sourceColor
-     * @param sourcePile
-     * @param destinColor
-     * @param destinPile 
-     */
-    public void cardFight(ScrimishColors sourceColor, int sourcePile, ScrimishColors destinColor, int destinPile){
-        _ui.removeCard(destinColor, destinPile);
-        playCardSound();
-        handleVictory(sourceColor);
     }
     
     public void handleAudioButtonClicked(){
